@@ -24,6 +24,130 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://alexsaezm.com/2023/12/19/bash-and-toolbox.html">Bash and Toolbox</a></h1>
+		
+
+		<a href="https://alexsaezm.com/2023/12/19/bash-and-toolbox.html" class="u-url"><time class="dt-published" datetime="2023-12-19 09:14:43 &#43;0100">Dec 19, 2023</time></a>
+
+		<div class="e-content">
+			 <p>I use <a href="https://containertoolbx.org/">Toolbox</a> a lot, like every single day. And I have a very minimal bash prompt (just <code>$ </code> in green and <code>&gt; </code> in red for PS2). But it is quite hard to tell at a glance if I am inside a Podman container that was created by Toolbox, mostly because the tools I normally use, are there, and it&rsquo;s my home directory.</p>
+<p>I usually check /etc/fedora-release but that&rsquo;s a poor check.</p>
+<p>Well, now my prompt inside a container is different:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Colors</span>
+C_TEXT<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[0m&#34;</span>
+C_PS1<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[38;5;46m&#34;</span>
+C_PS2<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[38;5;208m&#34;</span>
+C_PS1_CONTAINER<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[38;5;208m&#34;</span>
+
+<span style="color:#75715e"># Toolbox check</span>
+<span style="color:#66d9ef">if</span> grep -q container /proc/self/cgroup; <span style="color:#66d9ef">then</span>
+	export PS1<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>C_PS1_CONTAINER<span style="color:#e6db74">}</span><span style="color:#e6db74">\h \\</span>$<span style="color:#e6db74"> </span><span style="color:#e6db74">${</span>C_TEXT<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">else</span>
+	export PS1<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>C_PS1<span style="color:#e6db74">}</span><span style="color:#e6db74">\\</span>$<span style="color:#e6db74"> </span><span style="color:#e6db74">${</span>C_TEXT<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">fi</span>
+export PS2<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>C_PS2<span style="color:#e6db74">}</span><span style="color:#e6db74">&gt; </span><span style="color:#e6db74">${</span>C_TEXT<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</code></pre></div><p>That&rsquo;s good enough for now.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://alexsaezm.com/2023/12/18/a-rabbit-hole.html" class="u-url"><time class="dt-published" datetime="2023-12-18 09:40:38 &#43;0100">Dec 18, 2023</time></a>
+
+		<div class="e-content">
+			 <p>A rabbit hole I didn&rsquo;t ask for but I&rsquo;m totally willing to go in: <a href="https://music.ishkur.com/">Ishkur&rsquo;s Guide to Electronic Music</a> 🎵</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://alexsaezm.com/2023/12/15/i-find-myself.html" class="u-url"><time class="dt-published" datetime="2023-12-15 21:57:42 &#43;0100">Dec 15, 2023</time></a>
+
+		<div class="e-content">
+			 <p>I find myself with a little bit of time to unwind alone this night and I feel like I should be doing stuff before relaxing.</p>
+<p>For once, I am gonna force myself to sit down and play a video game while having a beer.</p>
+<p>If I feel like I need to do something else that is not relaxing, it’s a symptom of the need for time off.</p>
+<p>🍺</p>
+<!-- raw HTML omitted -->
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://alexsaezm.com/2023/12/14/i-wrote-a.html" class="u-url"><time class="dt-published" datetime="2023-12-14 13:24:45 &#43;0100">Dec 14, 2023</time></a>
+
+		<div class="e-content">
+			 <p>I wrote a blog post in the Red Hat Developers blog.</p>
+<p><a href="https://developers.redhat.com/articles/2023/12/14/how-improve-go-fips-test-coverage-packit">How to improve Go FIPS test coverage with Packit</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://alexsaezm.com/2023/12/14/early-morning-run.html" class="u-url"><time class="dt-published" datetime="2023-12-14 10:28:45 &#43;0100">Dec 14, 2023</time></a>
+
+		<div class="e-content">
+			 <p>🏃early morning run</p>
+<!-- raw HTML omitted -->
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://alexsaezm.com/2023/12/13/bundling-delve-on.html">Bundling Delve on Fedora</a></h1>
+		
+
+		<a href="https://alexsaezm.com/2023/12/13/bundling-delve-on.html" class="u-url"><time class="dt-published" datetime="2023-12-13 17:25:02 &#43;0100">Dec 13, 2023</time></a>
+
+		<div class="e-content">
+			 <p>TL;DR: Delve now has bundle dependencies.</p>
+<p>While working on integrating Delve with Packit, I found myself trying to fix some dependencies again. This is not usually a problem, but in some packages, like Delve, the version of the already existing Fedora packages containing the dependencies doesn&rsquo;t match. Patching tests to adapt them to a different version when the upstream project is active and well-tested sounds like a bad idea. So, I bundled the dependencies.</p>
+<p>This should make the whole update process for Delve really straightforward and almost automagic because Packit will detect new versions and open the PR for every supported branch.</p>
+<p>By the way, I created a <a href="https://alexsaezm.com/categories/fedora">Fedora category</a> and added myself to <a href="http://fedoraplanet.org">Fedora Planet</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+
+		<a href="https://alexsaezm.com/2023/12/13/this-was-a.html" class="u-url"><time class="dt-published" datetime="2023-12-13 12:13:46 &#43;0100">Dec 13, 2023</time></a>
+
+		<div class="e-content">
+			 <p>This was a book difficult to get. Codes and Ciphers, by Alexander D’Agapeyeff.</p>
+<!-- raw HTML omitted -->
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://alexsaezm.com/2023/12/13/i-think-i.html">Mastodon migration</a></h1>
+		
+
+		<a href="https://alexsaezm.com/2023/12/13/i-think-i.html" class="u-url"><time class="dt-published" datetime="2023-12-13 10:49:43 &#43;0100">Dec 13, 2023</time></a>
+
+		<div class="e-content">
+			 <p>I think I migrated my Mastodon account to my page (on purpose).</p>
+<p>The why? Not sure. I&rsquo;m not too fond of cross-posting for some reason, and I am not using successfully social networks. Honestly, Mastodon never hooked me like Twitter did. Which is fine; I was addicted to Twitter. But having a Mastodon account feels a little bit like FOMO.</p>
+<p>I guess this migration is a way not to feel 100% isolated from the world. But somehow still be. Be mindfully isolated if that makes sense.</p>
+<p>If I understood the documentation correctly, I won&rsquo;t have boosts, for example, but replies should be integrated. That&rsquo;s good enough for me.</p>
+<p>Edit: oh btw, I imported all the contacts I was following&hellip; but I saw several errors in the logs. In any case, I was almost a ghost in Mastodon so I don&rsquo;t expect much changes.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 
 		<a href="https://alexsaezm.com/2023/12/03/i-good-reminder.html" class="u-url"><time class="dt-published" datetime="2023-12-03 10:22:29 &#43;0100">Dec 3, 2023</time></a>
 
@@ -623,7 +747,7 @@ Generally, a <code>FIXME</code> or a <code>TODO</code> is usually smaller than a
 </code></pre></div><p>And then, here&rsquo;s the trick. <strong>A lot of IDE and editors allow filtering comments based on regular expressions!</strong></p>
 <p>In my case, I mostly use Goland nowadays, but it works in all JetBrains products.</p>
 <p>Go to the TODO tab, click on the filter icon, select <em>Edit filters</em>, and add something like this:</p>
-<p><img src="https://alexsaezm.com/uploads/2023/fa5409f49e.png" alt="My TODO filters" title="My TODO filters"></p>
+<p><img src="https://cdn.uploads.micro.blog/123741/2023/fa5409f49e.png" alt="My TODO filters" title="My TODO filters"></p>
 <p>And enjoy your useful comments!</p>
 
 		</div>
