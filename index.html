@@ -24,13 +24,48 @@
 	
 	  <div class="h-entry">
 		
+
+		<a href="https://alexsaezm.com/2023/12/24/a-new-humble.html" class="u-url"><time class="dt-published" datetime="2023-12-24 13:10:45 &#43;0100">Dec 24, 2023</time></a>
+
+		<div class="e-content">
+			 <p>🏃a new humble personal best</p>
+<!-- raw HTML omitted -->
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://alexsaezm.com/2023/12/20/go-in-fedora.html">Go 1.22 in Fedora 40</a></h1>
+		
+
+		<a href="https://alexsaezm.com/2023/12/20/go-in-fedora.html" class="u-url"><time class="dt-published" datetime="2023-12-20 10:20:19 &#43;0100">Dec 20, 2023</time></a>
+
+		<div class="e-content">
+			 <p>If everything goes as planned, Fedora 40 will have Go 1.22.</p>
+<p><a href="https://tip.golang.org/doc/go1.22">Go 1.22 is planned for February 2024</a>, and <a href="https://fedorapeople.org/groups/schedule/f-40/f-40-key-tasks.html">Fedora 40 around April 2024</a>.</p>
+<blockquote>
+<p>I&rsquo;ve been doing the Go updates for the past few releases since Go 1.15 in Fedora 33. ~3 years!</p>
+</blockquote>
+<p>I just created <a href="https://fedoraproject.org/wiki/Changes/golang1.22">the wiki page for the proposal</a>. The email thread in the Development list will land soon.</p>
+<p>And if you are curious, <a href="https://src.fedoraproject.org/rpms/golang/pull-request/136">the ongoing PR is here</a>. So far, it has been easy peasy, with no problems at all (knock on wood). I like to use pull request for all my changes, (we are a lot of people making Fedora possible and it brings clarity in the intentions), but for yet-to-be-accepted changes is mandatory, Rawhide won&rsquo;t have Go 1.22 until is approved by FESCo.</p>
+<p>On a side note, <a href="https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/ZQROWTMARIUS45KIQZIUNAA45K3NWLRW/">there is an ongoing conversation about some defaults we ship in Fedora</a>. In my opinion, the discussion is worth reading (and not because I started it 😅). Participate, please! It&rsquo;s a small change but quite relevant for the Go users.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://alexsaezm.com/2023/12/19/bash-and-toolbox.html">Bash and Toolbox</a></h1>
 		
 
 		<a href="https://alexsaezm.com/2023/12/19/bash-and-toolbox.html" class="u-url"><time class="dt-published" datetime="2023-12-19 09:14:43 &#43;0100">Dec 19, 2023</time></a>
 
 		<div class="e-content">
-			 <p>I use <a href="https://containertoolbx.org/">Toolbox</a> a lot, like every single day. And I have a very minimal bash prompt (just <code>$ </code> in green and <code>&gt; </code> in red for PS2). But it is quite hard to tell at a glance if I am inside a Podman container that was created by Toolbox, mostly because the tools I normally use, are there, and it&rsquo;s my home directory.</p>
+			 <blockquote>
+<p>I don&rsquo;t do this anymore, as I explain a little down.</p>
+</blockquote>
+<p>I use <a href="https://containertoolbx.org/">Toolbox</a> a lot, like every single day. And I have a very minimal bash prompt (just <code>$ </code> in green and <code>&gt; </code> in red for PS2). But it is quite hard to tell at a glance if I am inside a Podman container that was created by Toolbox, mostly because the tools I normally use, are there, and it&rsquo;s my home directory.</p>
 <p>I usually check /etc/fedora-release but that&rsquo;s a poor check.</p>
 <p>Well, now my prompt inside a container is different:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Colors</span>
@@ -47,6 +82,27 @@ C_PS1_CONTAINER<span style="color:#f92672">=</span><span style="color:#e6db74">&
 <span style="color:#66d9ef">fi</span>
 export PS2<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>C_PS2<span style="color:#e6db74">}</span><span style="color:#e6db74">&gt; </span><span style="color:#e6db74">${</span>C_TEXT<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
 </code></pre></div><p>That&rsquo;s good enough for now.</p>
+<hr>
+<p><strong>What I do now:</strong></p>
+<p>Since I made this post, I realized there were some issues with the coloring in the prompt. Instead of debugging it, I changed a few things.</p>
+<p>For starters, I keep my prompt the same everywhere and use the hostname as a way to identify where I am. So one line instead of the whole chunk before:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export PS1<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\[\e[38;5;202m\]\h \[\e[38;5;131m\]\$ \[\033[0m\]&#34;</span>
+</code></pre></div><p>It is not as minimal as before, but quite there.</p>
+<p>I also use fzf keybindings which are usually not present inside a container. Instead of using the <code>grep -q container /proc/self/cgroup</code> approach, I just check if they are present or not:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># FZF: dnf install fzf -y</span>
+<span style="color:#75715e"># Source only fzf bindings if the file exists. A common scenario is inside a container.</span>
+FZF_BINDINGS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/usr/share/fzf/shell/key-bindings.bash&#34;</span>
+<span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> -f $FZF_BINDINGS <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+	source $FZF_BINDINGS
+<span style="color:#66d9ef">fi</span>
+</code></pre></div><p>So I guess the conclusion here is&hellip; simplifying is always better?</p>
+<p>In any case, the original idea of detecting if you are inside a container still works:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">if</span> grep -q container /proc/self/cgroup; <span style="color:#66d9ef">then</span>
+	echo <span style="color:#e6db74">&#34;Inside a container&#34;</span>
+<span style="color:#66d9ef">else</span>
+	echo <span style="color:#e6db74">&#34;Outside a container&#34;</span>
+<span style="color:#66d9ef">fi</span>
+</code></pre></div><p><strong>Now</strong> is good enough.</p>
 
 		</div>
 	  </div>
