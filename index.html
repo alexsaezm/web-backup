@@ -24,6 +24,89 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://alexsaezm.com/2024/03/25/spanish-mtproxy-on.html">[Spanish] MTProxy on Fedora/CentOS Stream/RHEL</a></h1>
+		
+
+		<a href="https://alexsaezm.com/2024/03/25/spanish-mtproxy-on.html" class="u-url"><time class="dt-published" datetime="2024-03-25 09:37:56 &#43;0100">Mar 25, 2024</time></a>
+
+		<div class="e-content">
+			 <p>While I usually for no specific reason write in English, this post is written in Spanish due to the absurd <a href="https://www.euronews.com/next/2024/03/23/spains-high-court-orders-block-on-telegram-messaging-app-as-a-precautionary-measure">precautionary measure of blocking Telegram</a>.</p>
+<hr>
+<p>Hay muchas formas de saltarse un bloqueo a Telegram. Desde cambiar los DNS, hasta usar una VPN pero, en mi opinión, la mejor es <a href="https://github.com/TelegramMessenger/MTProxy">MTProxy</a>. Aunque el proyecto parece parado desde hace unos años, todavía funciona y para salir de un apuro, es una solución ideal.</p>
+<p>Todavía no se sabe como van a bloquear el uso de la plataforma (aunque viendo como se ha hecho hasta ahora este tipo de cosas, van a bloquear los dominios con casi total seguridad). Si este es el caso, yo personalmente uso <a href="https://nextdns.io/">NextDNS</a> para bloquear ciertas páginas.</p>
+<p>Sin embargo, cambiar los DNS no me parece una medida adecuada de cara a seguir usando Telegram. No siempre es factible cambiarlos. Algunos routers suministrados por proveedores de servidores de Internet no permiten hacer estas modificaciones.</p>
+<p>¿Y una VPN? Esta solución es un poco drástica. Por funcionar, funciona. Pero, salvo que sepas lo que estas haciendo, estarías pasando todo el trafico del dispositivo por la VPN. E igual no es algo que te interesa. Igual no quieres estar saliendo por Francia las 24 horas del dia. O igual no puedes tener todos tus dispositivos en una VPN como por ejemplo el ordenador del trabajo. Además de que los servicios de VPN son de dudosa fiabilidad. Si vas a seguir esta ruta, mi recomendación es que te montes tu mismo la VPN, ya sea usando <a href="https://openvpn.net/">OpenVPN</a> o <a href="https://www.wireguard.com/">WireGuard</a>, o que uses un servicio por el que estás pagando y del que te fías. Yo personalmente uso la primera opción pero <a href="https://protonvpn.com/">ProtonVPN</a> me ha dado buen resultado en el pasado.</p>
+<p>¿Por qué un proxy y en particular MTProxy? Pues bastante sencillo. Telegram soporta esto de manera nativa en todas las aplicaciones oficiales. Soporta SOCKS5 y MTProto y una vez tengas montado el servicio, puedes compartir el enlace con la gente que te importa. El tráfico de Telegram es lo único que va a través del proxy, no afectando en absoluto a la conexión del resto de aplicaciones del dispositivo.</p>
+<p>Así que si tienes una máquina con Fedora, CentOS Stream 9 o RHEL 9 (puede que funcione con versiones anteriores pero no lo he probado), sigue estos pasos. Yo por el momento uso Linode y un servidor en Amsterdam. El proveedor de la maquina virtual es lo de menos. Asegúrate también de que sabes como proteger y mantener un equipo expuesto públicamente.</p>
+<blockquote>
+<p>Se asume que la máquina esta limpia, si es una máquina que ya tenias, puede que los pasos del firewall te den problemas. Pero si ya tienes una máquina es que sabes lo que haces :)</p>
+</blockquote>
+<p>Vamos a rodar todas las instrucciones como root y están muy basadas en lo que dice la propia documentación, con algunos pequeños cambios para ponerla al día. El servicio <strong>no va</strong> a estar rodando como root, tranquilo :P</p>
+<p>Vamos a instalar las dependencias que necesitamos para compilar MTProxy.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">dnf install openssl-devel zlib-devel
+dnf groupinstall <span style="color:#e6db74">&#34;Development tools&#34;</span>
+</code></pre></div><p>Ahora necesitamos bajar el proyecto.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git clone https://github.com/TelegramMessenger/MTProxy
+cd MTProxy
+</code></pre></div><p>Hay un problema actualmente en MTProxy si intentamos compilarlo, hace un tiempo un usuario abrió una pull request con la solución, así que vamos a aplicar su parche:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -L -O https://patch-diff.githubusercontent.com/raw/TelegramMessenger/MTProxy/pull/531.patch
+git am 531.patch
+rm -f 531.patch
+</code></pre></div><p>Para compilarlo, solo tenemos que hacer:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">make
+</code></pre></div><p>Puede que durante la compilación veas algunos <em>warnings</em>, y como cualquier buena instalación, vamos a obviarlos :P (En CentOS Stream 9 no los he visto pero si en Fedora 39, así que puede que se deba a diferentes ajustes en GCC, no le he dedicado mucho tiempo a esto).</p>
+<p>En general, una aplicación instalada a mano suele ponerse en <code>/opt</code> y ahí es donde vamos a ponerla (lee <code>man hier</code> si tienes curiosidad).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir /opt/MTProxy
+cp objs/bin/mtproto-proxy /opt/MTProxy/
+cd /opt/MTProxy/
+</code></pre></div><p>Ahora tenemos que hacernos con el secreto y la configuración que nos da Telegram. La configuración puede cambiar así que aconsejan renovarla a diario (candidato ideal para un cron :))</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -s https://core.telegram.org/getProxySecret -o proxy-secret
+curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
+</code></pre></div><p>El contenido de <code>/opt/MTProxy</code> debería ser: <code>mtproto-proxy</code>, <code>proxy-multi.conf</code> y <code>proxy-secret</code>.</p>
+<p>Ahora necesitamos el secreto que usaremos para validar nuestros clientes contra nuestro servidor. Puede ser cualquier cosa que te inventes pero lo que sugiere el proyecto es ideal: simplemente guarda en algún lado la salida de esta instrucción:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">head -c <span style="color:#ae81ff">16</span> /dev/urandom | xxd -ps
+</code></pre></div><p>Necesitamos asegurarnos de que el firewall que suele venir activado de serie no nos de problemas.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">firewall-cmd --permanent --new-service<span style="color:#f92672">=</span>MTProxy
+firewall-cmd --permanent --service<span style="color:#f92672">=</span>MTProxy --add-port<span style="color:#f92672">=</span>4242/tcp
+firewall-cmd --permanent --add-service<span style="color:#f92672">=</span>MTProxy
+firewall-cmd --reload
+</code></pre></div><p>Si todo ha ido bien, deberías haber visto varios <code>success</code>. Pero siempre puedes comprobar que MTProxy esta listo en el el firewall con:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">firewall-cmd --list-all | grep services
+</code></pre></div><p>Aunque ya tenemos todo lo que necesitamos, la guinda en el pastel es configurar MTProxy como servicio que ruede como un usuario no privilegiado sin shell y sin home.</p>
+<p>Primero creamos el usuario, y le damos permisos sobre <code>/opt/MTProxy</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">useradd -M -s /sbin/nologin mtproxy
+chown -R mtproxy:mtproxy /opt/MTProxy
+</code></pre></div><p>Ahora, necesitamos crear el servicio. Fíjate que necesitas modificar las lineas un poco para incluir el secreto que generamos antes de pegarlo en la terminal.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat <span style="color:#e6db74">&lt;&lt;EOF &gt; /etc/systemd/system/MTProxy.service
+</span><span style="color:#e6db74">[Unit]
+</span><span style="color:#e6db74">Description=MTProxy
+</span><span style="color:#e6db74">After=network.target
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">[Service]
+</span><span style="color:#e6db74">Type=simple
+</span><span style="color:#e6db74">User=mtproxy
+</span><span style="color:#e6db74">Group=mtproxy
+</span><span style="color:#e6db74">WorkingDirectory=/opt/MTProxy
+</span><span style="color:#e6db74">ExecStart=/opt/MTProxy/mtproto-proxy -H 4242 -S &lt;EL SECRETO VA AQUI&gt; --aes-pwd proxy-secret proxy-multi.conf --log mtproxy.log -M 1
+</span><span style="color:#e6db74">Restart=on-failure
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">[Install]
+</span><span style="color:#e6db74">WantedBy=multi-user.target
+</span><span style="color:#e6db74">EOF</span>
+</code></pre></div><p>Tras esto, ya estamos listos para rodar el servicio:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
+systemctl enable MTProxy.service
+systemctl start MTProxy.service
+systemctl status MTProxy.service
+</code></pre></div><p>Para configurarlo fácilmente, adapta el siguiente enlace, o compártelo a quien quieras:</p>
+<pre tabindex="0"><code>https://t.me/proxy?server=&lt;LA IP PUBLICA&gt;&amp;port=&lt;EL PUERTO&gt;&amp;secret=&lt;EL SECRETO&gt;
+</code></pre><p>Si encuentras algún fallo, por favor, dímelo para que pueda actualizarlo.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://alexsaezm.com/2024/03/18/weeks-for-my.html">7 weeks for my first half-marathon</a></h1>
 		
 
@@ -32,8 +115,9 @@
 		<div class="e-content">
 			 <p><a href="https://mmgijon.321go.es/">In 7 weeks, I have my first half-marathon</a>. I don&rsquo;t have a specific time in mind for that day; finishing it is good enough for me. But I will try to hit the 01:45:00 mark.</p>
 <p>I want to do an experiment for myself. I want to document how each training week feels at the end. So in 7 days, I&rsquo;ll write how this week went. How many sessions I had and how they felt. My pains and even the weather. Why? Because I know progress is a difficult thing to see, and in a few years, I will look back at this and say, &ldquo;Damn, it was hard&rdquo;. And who knows? Maybe someone reads this and gets motivation to do something that feels hard.</p>
+<h2 id="previously-in-doing-it-all-wrong">Previously in &ldquo;Doing it all wrong&rdquo;&hellip;</h2>
 <p>I’ve been running on and off for several years. And until recently, without any kind of plan or goal, just go out and run. Usually, this is a terrible idea. While running can be really healthy, doing it without proper form, or mindset leads to issues.</p>
-<p>Before continuing this tail of wrongdoings, I need to add that I have always, since I was a child, loved to run. I was quite good at PE. I was one of the fastest of my classmates, and among them were several who used to compete. My mother will always regret not forcing me to enroll in the running team. So do I. But it is what it is. Maybe if I did, I would never love running. Who knows.</p>
+<p>Before continuing this tail of wrongdoings, I need to add that I have always, since I was a child, loved to run. I was quite good at PE. I was one of the fastest of my classmates, and among them were several who used to compete. My mother will always regret not forcing me to enroll in the running team. So do I. But it is what it is. Maybe if I had, I would never have liked it. Who knows.</p>
 <p>But even with my natural predisposition to run, I managed to screw up things really badly.</p>
 <p>My first running plan for years was to go out for a max-effort run (I didn’t know you could run slower!) and then stop running for days or weeks to recover. My first “serious” goal was to reach 5k in 30 minutes; for no reason, it sounded like a challenge to me. And it wasn&rsquo;t. I reached that point quite fast, in about 2 weeks of just running. Then no improvement happened anymore. I didn&rsquo;t know that it wasn&rsquo;t a proper milestone for me. To be honest, I didn&rsquo;t even know what my pace was.</p>
 <p>These informal attempts at training happened for years until the COVID lockdowns were done.</p>
@@ -46,20 +130,19 @@
 <p>So instead of making my own plan, because that was something that would never happen, I found a personal trainer who knows about running. That was in June 2022. We decided that there was no due date for the marathon or for any of the milestones. Working remotely is something that I truly enjoy, but I created really unhealthy habits, and when the lockdowns started, they didn’t improve at all. I was extremely out of shape, and I didn’t know this at that moment, but I was stressed and sleep-deprived.</p>
 <p>It took a few months to feel ready for a race. Or that was what we thought. I didn&rsquo;t know how to communicate my progression in the training. I was overweight—78 kg for a 173cm guy—and I overtrained without really knowing it. In fact, I didn&rsquo;t know you could overtrain at all.</p>
 <p>September 2022, a nightly 10k along the coast. Earlier in the week, I had a weird pain in my left leg around the internal part of the calf while attending a training session at the gym with my girlfriend. She wanted to attend a class, and I went with her. Outside my training plan, without talking with my trainer, without removing or modifying my sessions.</p>
-<p>And I did what every stupid person would do: I ran with it. That became a periostalgia in my left leg. But, hey, I finished it. 59:23.</p>
-<p>![[photo_2024-03-18_11-13-23.jpg]]</p>
+<p>And I did what every stupid person would do: I ran with it. That became a <a href="https://en.wikipedia.org/wiki/Periostitis">periostitis</a> in my left leg. But, hey, I finished it. 59:23.</p>
+<!-- raw HTML omitted -->
 <p>I was not able to get rid of it for months. Then I raced again on December 31, 2022, a shorter distance. And the pain came back. I stopped running for the first half of 2023 to recover properly. It might look like a lot of time, but keep in mind that I wasn’t able to walk without pain for two months. I really screwed up my leg. I should have used this time to do strength training, but I didn’t. My trainer set a plan, but I was mentally exhausted, so I decided to call it and take a break. That was a mistake. Reasonable, but a mistake nonetheless.</p>
-<p>Summer 2023: I started running again.</p>
-<p>I need to admit that up to this point, running was something I was doing because I thought it was good for me, but I wasn’t truly enjoying it. Then, one day, I ran 12km without any goal in mind at an easy pace on a nice rainy morning. And something clicked. I was along, across a walking path, surrounded by mountains. I loved every second of it.</p>
-<p>![[photo_2024-03-18_11-10-15.jpg]]</p>
-<p>![[photo_2024-03-18_11-10-02.jpg]]</p>
-<p>![[photo_2024-03-18_11-10-11.jpg]]</p>
-<p>![[photo_2024-03-18_11-10-20.jpg]]</p>
+<h2 id="summer-2023-i-started-running-again">Summer 2023: I started running again.</h2>
+<p>I need to admit that up to this point, running was something I was doing because I thought it was good for me, but I wasn’t truly enjoying it. Then, one day, I ran 12km without any goal in mind at an easy pace on a nice rainy morning. And something clicked. I was alone, across a walking path, surrounded by mountains. I loved every second of it.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
 <p>Suddenly, instead of running because I wanted to be fitter, I wanted to be fitter to feel something like that day. I wanted to be fitter to run.</p>
 <p>I slowly started to fix my sleep patterns (oh boy, there was a lot to fix here), I did blood tests (vitamin D was really low), and I took care of my eating habits. The classic stuff: tracking calories and protein, stopping drinking coffee around noon, going to bed earlier, quitting social media completely, and starting to read books on a daily basis. These two last things might not be really related to health, but somehow I can feel they changed my mental energy for the better.</p>
 <p>I started again with the trainer and added Pilates to the equation. 3 running sessions, 2 Pilates classes and 1 strength session per week.</p>
 <p>I moved from 78kg to 70kg in a few months. The scale freaked out. Abs are now a thing.</p>
-<p>Ran several 5k and 10k. My best times are 23:20 for the 5k and 47:48 for the 10k. Nothing fancy; there is still a lot of work to do, but I didn&rsquo;t start running because I wanted to win races.</p>
+<p>Ran several 5k and 10k. My best times are 23:20 for the 5k and 47:48 for the 10k. Nothing fancy; there is still a lot of work to do, but I didn&rsquo;t start to run because I wanted to win races.</p>
 <p>Running is not a habit anymore. I made running a hobby, and I am looking for it every single week. I now organize my week around running.</p>
 <p>Enough with the melodramatic backstory; let’s train. See you in a week.</p>
 
@@ -1039,7 +1122,7 @@ Generally, a <code>FIXME</code> or a <code>TODO</code> is usually smaller than a
 </code></pre></div><p>And then, here&rsquo;s the trick. <strong>A lot of IDE and editors allow filtering comments based on regular expressions!</strong></p>
 <p>In my case, I mostly use Goland nowadays, but it works in all JetBrains products.</p>
 <p>Go to the TODO tab, click on the filter icon, select <em>Edit filters</em>, and add something like this:</p>
-<p><img src="https://cdn.uploads.micro.blog/123741/2023/fa5409f49e.png" alt="My TODO filters" title="My TODO filters"></p>
+<p><img src="https://alexsaezm.com/uploads/2023/fa5409f49e.png" alt="My TODO filters" title="My TODO filters"></p>
 <p>And enjoy your useful comments!</p>
 
 		</div>
